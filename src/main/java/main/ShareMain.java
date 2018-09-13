@@ -17,7 +17,7 @@ public class ShareMain {
         //我们要爬取的一个地址，这里可以从数据库中抽取数据，然后利用循环，可以爬取一个URL队列
         String id="0600010";
         int m = Integer.parseInt( id );
-        for(int i=1;i<30;i++) {
+        for(int i=1;i<15;i++) {
         	int s=m+1;
         	String a="0"+s;
         m++;

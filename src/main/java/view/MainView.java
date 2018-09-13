@@ -1,153 +1,167 @@
 package view;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.concurrent.TimeUnit;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.SQLException;
+import javax.swing.*;
 import db.MYSQLControl;
 import main.MoneyMain;
 import main.ShareMain;
 
-public class MainView {
-	private JFrame frame;
-	private JButton getnamebtn;		//获取名称
-	private JButton deletebtn;			//删除数据按钮
-	private JButton getmoneybtn;		//获取分红按钮
-	private JTextField updatebtn;      //显示进度信息
-	private JButton showbtn;           //进度条
-	private JButton exitbtn;				//推出
+public class MainView extends JFrame implements ActionListener{
 	
-	//构造器
-	public MainView() {
-		init();
+	private static final long serialVersionUID = 1L;	//串行化用
+	
+	private JPanel p1;
+	private JPanel p2;
+	private JButton button1;
+	private JButton button2;
+	private JButton button3;
+	private JButton buttonquit;
+	private JTextField textfield;
+	private JProgressBar progressbar;
+	
+	public getinfo mygetinfo;
+	
+	public MainView(String title) {
+		super(title);
+
+		//初始化组件
+		button1 = new JButton("getname");
+		button2 = new JButton("getmoney");
+		button3 = new JButton("delete");
+		buttonquit = new JButton("quit");
+		
+		textfield = new JTextField();
+		
+		p1 = new JPanel(new GridLayout(8,2));
+		p2 = new JPanel(new GridLayout(3,1));
+		
+		progressbar = new JProgressBar(0,100);
+		
+		mygetinfo = new getinfo(progressbar,textfield);
+		
+		//构造组件
+		p1.add(button1);
+		p1.add(button2);
+		p1.add(button3);
+		
+		p2.add(textfield);
+		p2.add(progressbar);
+		p2.add(buttonquit);
+		
+		//添加组件
+		getContentPane().add("North",p1);
+		getContentPane().add("South",p2);
+				
+		//注册事件
+		button1.addActionListener(this);
+		button2.addActionListener(this);
+		button3.addActionListener(this);
+		buttonquit.addActionListener(this);
 	}
 	
-	//初始化
-	public void init() {
-		 SwingUtilities.invokeLater(new Runnable() {
+	public void actionPerformed(ActionEvent e){
+	    String selected =e.getActionCommand();
+	    
+	    //获取股票名称
+	    if (selected.equals("getname")){
+	    	mygetinfo.setkind(1);
+	    	Thread t1 = new Thread(mygetinfo,"11");
+	    	t1.start();
+	    }
+	    
+	    //获取分红数据
+	    if(selected.equals("getmoney")){
+	    	mygetinfo.setkind(2);
+	    	Thread t1 = new Thread(mygetinfo,"22");
+	    	t1.start();
+	    }
+	    
+	    //删除分红数据
+	    if(selected.equals("delete")){
+	    	try {
+				MYSQLControl.executeDelete();
+				MYSQLControl.executeDelete1();
+				textfield.setText("数据库中的数据已被清空");
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	    }
+	    	    	    
+	    if (selected.equals("quit")){
+	    	this.dispose();	
+	    }
+	}
 
-	           public void run() {
-		frame = new JFrame();
-		frame.setTitle("主界面");
-		frame.setBounds(100, 100, 300, 400);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
-		frame.getContentPane().setLayout(null);
-		frame.setResizable(false);
+	public static void main(String[] args){
+		MainView me = new MainView("myinfo!");
+		me.pack();
+		me.setSize(500,500);
+		me.setVisible(true);
+	}	
+}
 
-		//布局
-		getnamebtn = new JButton("getname");
-		getnamebtn.setBounds(0,0, 300, 30);
-		frame.getContentPane().add(getnamebtn);
+//对于大数据量的处理专门用一个线程
+class getinfo implements Runnable{
+	public JProgressBar myprogressbar;
+	public JTextField mytextfield;
+	public int mykind;
+	
+	public getinfo(JProgressBar tempprogressbar,JTextField temptextfield){
+		this.myprogressbar = tempprogressbar;
+		this.mytextfield = temptextfield;
+	}
+	
+	public void setkind(int x){
+		this.mykind = x;
+	}
+	
+	public void run(){
 		
-		getmoneybtn = new JButton("getmoney");
-		getmoneybtn.setBounds(0,30, 300, 30);
-		frame.getContentPane().add(getmoneybtn);
-		
-		deletebtn = new JButton("delete");
-		deletebtn.setBounds(0,60, 300, 30);
-		frame.getContentPane().add(deletebtn);
-		
-		updatebtn = new JTextField("显示信息");
-		updatebtn.setBounds(0,270, 300, 30);
-		frame.getContentPane().add(updatebtn);
-		
-		//进度条   当其他按钮正在触发事件时无法显示进度
-		final JProgressBar progressBar=new JProgressBar();
-		progressBar.setBounds(0,300, 300, 30);
-		progressBar.setStringPainted(true);
-
-//		new Thread(){
-//    		public void run(){
-//    			for(int i=0;i<=100;i++){
-//    				try{
-//    					Thread.sleep(100);
-//    				}catch(InterruptedException e){
-//    					e.printStackTrace();
-//    				}
-//    			      progressBar.setValue(i);
-//    			}
-//    			progressBar.setString("完成！");
-//    		}
-//    	}.start();
-    	frame.getContentPane().add(progressBar);
-    	
-		exitbtn = new JButton("退出");
-		exitbtn.setBounds(0,330, 300, 30);
-		frame.getContentPane().add(exitbtn);
-		
-		//退出按钮
-		exitbtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-			}
-		});
-		
-		getnamebtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					updatebtn.setText("正在获取数据");
-					//创建多线程制造进度条的效果
-					new Thread(){
-						   public void run() {
-                               for (int i = 0; i <= 10; i++) {
-                                   final int finalI = i;
-                                   SwingUtilities.invokeLater(new Runnable() {
-                                       public void run() {
-                                           progressBar.setValue(finalI * 10);
-                                       }
-                                   });
-                                   try {
-                                       TimeUnit.SECONDS.sleep(1);
-                                   } catch (InterruptedException e1) {
-                                       e1.printStackTrace();
-                                   }
-                               }
-                           }
-			    	}.start();
-					ShareMain.main(null);
-					updatebtn.setText("获取完毕");
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+		//1表示获取股票名称，!!!!!
+		if(mykind == 1){
+			try {
+				mytextfield.setText("正在读取股票数据");
+				ShareMain.main(null);
+				mytextfield.setText("正在向数据库中存储数据");
+				for(int i=0;i<=100;i++){
+					try{
+						//设置进度条速度
+						Thread.sleep(60);
+					}catch(InterruptedException e){
+						e.printStackTrace();
+					}
+					myprogressbar.setValue(i);
 				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		});
+		}
 		
-		//点击getmoney按钮触发事件,获取分红信息
-		getmoneybtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					MoneyMain.main(null);
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+		//2表示获取股票分红、配股、送股，!!!!!
+		if(mykind == 2){
+			try {
+				mytextfield.setText("正在读取分红数据");
+				MoneyMain.main(null);
+				mytextfield.setText("正在向数据库中存储数据");
+				for(int i=0;i<=100;i++){
+					try{
+						Thread.sleep(10);
+					}catch(InterruptedException e){
+						e.printStackTrace();
+					}
+					myprogressbar.setValue(i);
 				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		});
-		
-		//点击delete按钮触发事件，删除数据
-		deletebtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					updatebtn.setText("正在删除shares表中的数据");
-					MYSQLControl.executeDelete();
-					updatebtn.setText("数据删除成功");
-					updatebtn.setText("正在删除moneys表中的数据");
-					MYSQLControl.executeDelete1();
-					updatebtn.setText("数据删除成功");
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-		});
-	           }
-	       });
+		}				
+		try{
+			Thread.sleep(1000);	
+		}catch(Exception e){}
+    	mytextfield.setText("数据已存入数据库中");
 	}
 }

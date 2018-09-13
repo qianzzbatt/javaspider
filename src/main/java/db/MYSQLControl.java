@@ -13,7 +13,7 @@ import model.ShareModel;
 public class MYSQLControl {
 
     //根据自己的数据库地址修改
-    static DataSource ds = MyDataSource.getDataSource("jdbc:mysql://127.0.0.1:3306/moviedata?serverTimezone=UTC");
+    static DataSource ds = MyDataSource.getDataSource("jdbc:mysql://127.0.0.1:3306/moviedata?serverTimezone=UTC&useSSL=false");
     static QueryRunner qr = new QueryRunner(ds);
     //第一类方法
     public static void executeUpdate(String sql){
@@ -39,7 +39,7 @@ public class MYSQLControl {
         }
         qr.batch("insert into shares (id, name)"
                 + "values (?,?)", params);
-        System.out.println("执行数据库完毕！"+"成功插入数据："+sharesdata.size()+"条");
+        //System.out.println("执行数据库完毕！"+"成功插入数据："+sharesdata.size()+"条");
 
     }
     
@@ -71,7 +71,7 @@ public class MYSQLControl {
 
         qr.batch("insert into moneys (id, year,qian,songgu,zhuangu)"
                 + "values (?,?,?,?,?)", params);
-        System.out.println("执行数据库完毕！"+"成功插入数据："+moneysdata.size()+"条");
+        //System.out.println("执行数据库完毕！"+"成功插入数据："+moneysdata.size()+"条");
     }
     public static void executeDelete1() throws SQLException {
         /*
